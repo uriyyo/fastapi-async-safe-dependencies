@@ -8,6 +8,8 @@ from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from typing_extensions import Self
 
+from benchmark.app import get_app
+
 
 @dataclass
 class XProcesTime:
@@ -45,7 +47,7 @@ class BenchmarkResult:
         )
 
 
-async def benchmark(
+async def benchmark_app(
     app: ASGIApp,
     *,
     runs: int,
@@ -64,6 +66,20 @@ async def benchmark(
             times.extend(float(response.headers["x-process-time"]) for response in responses)
 
     return BenchmarkResult.from_times(times)
+
+
+async def benchmark(
+    *,
+    runs: int,
+    concurrency: int,
+) -> tuple[BenchmarkResult, BenchmarkResult]:
+    async def _run(add_async_safe: bool) -> BenchmarkResult:
+        return await benchmark_app(get_app(add_async_safe=add_async_safe), runs=runs, concurrency=concurrency)
+
+    default_run = await _run(False)
+    async_safe_run = await _run(True)
+
+    return default_run, async_safe_run
 
 
 __all__ = [

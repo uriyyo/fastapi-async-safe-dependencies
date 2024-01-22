@@ -1,20 +1,11 @@
-import asyncio
 from dataclasses import asdict, dataclass, fields, is_dataclass
 from json import dumps
 from typing import Any, Iterator, Literal
 
 import click
 
-from benchmark.app import app
 from benchmark.runner import BenchmarkResult, benchmark
-from fastapi_async_safe import init_app
-
-try:
-    import uvloop
-except ImportError:
-    run = asyncio.run
-else:
-    run = uvloop.run
+from benchmark.utils import run
 
 
 @dataclass
@@ -112,10 +103,7 @@ def main(
     concurrency: int,
     output: Literal["json", "md"],
 ) -> None:
-    default_run = run(benchmark(app, runs=runs, concurrency=concurrency))
-
-    init_app(app)
-    async_safe_run = run(benchmark(app, runs=runs, concurrency=concurrency))
+    default_run, async_safe_run = run(benchmark(runs=runs, concurrency=concurrency))
 
     rows: list[ResultRow] = []
     for field in fields(BenchmarkResult):

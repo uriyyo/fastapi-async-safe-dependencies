@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Optional
 
-from fastapi import Depends, FastAPI, Query
+from fastapi import APIRouter, Depends, FastAPI, Query
 
-from fastapi_async_safe import async_safe
+from fastapi_async_safe import async_safe, init_app
 
-app = FastAPI()
+router = APIRouter()
 
 
 class DB:
@@ -68,10 +68,23 @@ async def get_current_group(
     return await group_service.get()
 
 
-@app.get("/")
+@router.get("/")
 async def get_users(
     current_user: Any = Depends(get_current_user),
     current_group: Any = Depends(get_current_group),
     common_filter_params: CommonFilterParams = Depends(CommonFilterParams),
 ) -> Any:
     return {"status": "ok"}
+
+
+def get_app(
+    *,
+    add_async_safe: bool = False,
+) -> FastAPI:
+    app = FastAPI()
+    app.include_router(router)
+
+    if add_async_safe:
+        init_app(app)
+
+    return app

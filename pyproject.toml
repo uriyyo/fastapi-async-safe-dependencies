@@ -37,6 +37,7 @@ httpx = "^0.26.0"
 asgi-lifespan = "^2.1.0"
 click = "^8.1.7"
 uvicorn = {version = "^0.26.0", extras = ["standard"]}
+matplotlib = "^3.8.2"
 
 [build-system]
 requires = ["poetry-core"]
