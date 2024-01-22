@@ -9,7 +9,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  lint:
+  benchmark:
     runs-on: ubuntu-latest
     strategy:
       matrix:
