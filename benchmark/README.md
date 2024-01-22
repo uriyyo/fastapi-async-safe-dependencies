@@ -100,58 +100,58 @@ def get_app(
 
 | Type            | Default         | Async Safe      | Diff            |
 |-----------------|-----------------|-----------------|-----------------|
-| min             | 0.45ms          | 0.12ms          | x3.64 faster    |
-| max             | 19.98ms         | 15.34ms         | x1.30 faster    |
-| mean            | 0.57ms          | 0.15ms          | x3.88 faster    |
-| median          | 0.49ms          | 0.13ms          | x3.79 faster    |
+| min             | 0.69ms          | 0.28ms          | x2.45 faster    |
+| max             | 50.86ms         | 21.28ms         | x2.39 faster    |
+| mean            | 0.80ms          | 0.30ms          | x2.67 faster    |
+| median          | 0.83ms          | 0.29ms          | x2.89 faster    |
 
 
 ## Concurrency 10
 
 | Type            | Default         | Async Safe      | Diff            |
 |-----------------|-----------------|-----------------|-----------------|
-| min             | 3.54ms          | 1.27ms          | x2.80 faster    |
-| max             | 23.92ms         | 23.36ms         | x1.02 faster    |
-| mean            | 6.06ms          | 1.46ms          | x4.15 faster    |
-| median          | 5.33ms          | 1.38ms          | x3.85 faster    |
+| min             | 0.92ms          | 2.78ms          | x0.33 faster    |
+| max             | 63.80ms         | 32.85ms         | x1.94 faster    |
+| mean            | 10.13ms         | 3.02ms          | x3.36 faster    |
+| median          | 6.61ms          | 2.95ms          | x2.24 faster    |
 
 
 ## Concurrency 25
 
 | Type            | Default         | Async Safe      | Diff            |
 |-----------------|-----------------|-----------------|-----------------|
-| min             | 6.17ms          | 3.12ms          | x1.98 faster    |
-| max             | 37.60ms         | 25.79ms         | x1.46 faster    |
-| mean            | 13.06ms         | 3.64ms          | x3.59 faster    |
-| median          | 13.07ms         | 3.59ms          | x3.64 faster    |
+| min             | 0.92ms          | 6.87ms          | x0.13 faster    |
+| max             | 81.92ms         | 57.07ms         | x1.44 faster    |
+| mean            | 22.60ms         | 7.48ms          | x3.02 faster    |
+| median          | 18.54ms         | 7.49ms          | x2.48 faster    |
 
 
 ## Concurrency 50
 
 | Type            | Default         | Async Safe      | Diff            |
 |-----------------|-----------------|-----------------|-----------------|
-| min             | 14.94ms         | 6.16ms          | x2.43 faster    |
-| max             | 62.79ms         | 20.17ms         | x3.11 faster    |
-| mean            | 29.69ms         | 7.17ms          | x4.14 faster    |
-| median          | 33.01ms         | 6.83ms          | x4.83 faster    |
+| min             | 19.27ms         | 13.73ms         | x1.40 faster    |
+| max             | 113.67ms        | 57.82ms         | x1.97 faster    |
+| mean            | 46.61ms         | 15.45ms         | x3.02 faster    |
+| median          | 43.83ms         | 15.09ms         | x2.90 faster    |
 
 
 ## Concurrency 100
 
 | Type            | Default         | Async Safe      | Diff            |
 |-----------------|-----------------|-----------------|-----------------|
-| min             | 29.73ms         | 12.51ms         | x2.38 faster    |
-| max             | 97.38ms         | 39.65ms         | x2.46 faster    |
-| mean            | 64.75ms         | 15.05ms         | x4.30 faster    |
-| median          | 61.03ms         | 15.00ms         | x4.07 faster    |
+| min             | 43.50ms         | 28.08ms         | x1.55 faster    |
+| max             | 177.17ms        | 85.17ms         | x2.08 faster    |
+| mean            | 103.24ms        | 32.88ms         | x3.14 faster    |
+| median          | 134.49ms        | 31.24ms         | x4.31 faster    |
 
 
 ## Concurrency 200
 
 | Type            | Default         | Async Safe      | Diff            |
 |-----------------|-----------------|-----------------|-----------------|
-| min             | 77.25ms         | 24.90ms         | x3.10 faster    |
-| max             | 172.01ms        | 48.78ms         | x3.53 faster    |
-| mean            | 125.36ms        | 29.78ms         | x4.21 faster    |
-| median          | 124.58ms        | 28.62ms         | x4.35 faster    |
+| min             | 114.19ms        | 54.72ms         | x2.09 faster    |
+| max             | 299.55ms        | 122.07ms        | x2.45 faster    |
+| mean            | 210.90ms        | 61.94ms         | x3.40 faster    |
+| median          | 206.49ms        | 60.11ms         | x3.44 faster    |
 
