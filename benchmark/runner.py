@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
 from starlette.datastructures import MutableHeaders
-from starlette.types import ASGIApp, Receive, Scope, Send
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+from typing_extensions import Self
 
 
 @dataclass
@@ -13,32 +14,59 @@ class XProcesTime:
     app: ASGIApp
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        start = time.monotonic_ns()
+        start = time.monotonic()
 
-        async def send_wrapper(message):
+        async def send_wrapper(message: Message) -> None:
             if message["type"] == "http.response.start":
-                MutableHeaders(scope=message)["x-process-time"] = str(time.monotonic_ns() - start)
+                MutableHeaders(scope=message)["x-process-time"] = str(time.monotonic() - start)
 
             return await send(message)
 
         await self.app(scope, receive, send_wrapper)
 
 
+@dataclass
+class BenchmarkResult:
+    min: float
+    max: float
+    mean: float
+    median: float
+
+    @classmethod
+    def from_times(cls, times: list[float]) -> Self:
+        def _convert(t: float) -> float:  # convert to milliseconds
+            return t * 1_000
+
+        return cls(
+            mean=_convert(sum(times) / len(times)),
+            median=_convert(times[len(times) // 2]),
+            min=_convert(min(times)),
+            max=_convert(max(times)),
+        )
+
+
 async def benchmark(
     app: ASGIApp,
-    rounds: int = 100,
-    concurrency: int = 10,
-) -> float:
+    *,
+    runs: int,
+    concurrency: int,
+) -> BenchmarkResult:
     app = XProcesTime(app)
 
     async with (
         LifespanManager(app),
-        AsyncClient(app=app, base_url="http://test") as client,
+        AsyncClient(app=app, base_url="http://test.test") as client,
     ):
-        times = []
+        times: list[float] = []
 
-        for _ in range(rounds):
+        for _ in range(runs):
             responses = await gather(*[client.get("/") for _ in range(concurrency)])
             times.extend(float(response.headers["x-process-time"]) for response in responses)
 
-    return sum(times) / len(times)
+    return BenchmarkResult.from_times(times)
+
+
+__all__ = [
+    "BenchmarkResult",
+    "benchmark",
+]

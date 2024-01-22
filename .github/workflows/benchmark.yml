@@ -1,0 +1,58 @@
+name: Lint
+
+on:
+  workflow_dispatch:
+
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.9" ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.3.4
+
+      - name: Setup cache
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-py${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Run benchmark
+        run: |
+          poetry run bash benchmark/run.sh > benchmark/result.md
+
+      - name: Commit result
+        run: |
+          export DATE=$(date +'%Y-%m-%d')
+          export BRANCH_NAME="benchmark-$DATE"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          ! (git diff-index --quiet HEAD --) && \
+          git checkout -b "$BRANCH_NAME" && \
+          git commit -am "Benchmark run $DATE" && \
+          git push -u origin "$BRANCH_NAME" && \
+          gh pr create --title "Benchmark run $DATE" --body "" --base "main" --reviewer "uriyyo" || \
+          echo "No changes to commit"
