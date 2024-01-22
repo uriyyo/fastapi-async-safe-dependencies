@@ -1,6 +1,7 @@
 import time
 from asyncio import gather
 from dataclasses import dataclass
+from enum import Enum
 
 from asgi_lifespan import LifespanManager
 from httpx import AsyncClient
@@ -8,7 +9,8 @@ from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from typing_extensions import Self
 
-from benchmark.app import get_app
+from benchmark.app import get_app as default_get_app
+from benchmark.fastapi_example_app import get_app as fastapi_example_get_app
 
 
 @dataclass
@@ -25,6 +27,20 @@ class XProcesTime:
             return await send(message)
 
         await self.app(scope, receive, send_wrapper)
+
+
+class BenchmarkTestSuite(str, Enum):
+    app = "app"
+    fastapi_example = "fastapi_example"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+_SUITE_TO_APP = {
+    BenchmarkTestSuite.app: default_get_app,
+    BenchmarkTestSuite.fastapi_example: fastapi_example_get_app,
+}
 
 
 @dataclass
@@ -72,9 +88,16 @@ async def benchmark(
     *,
     runs: int,
     concurrency: int,
+    suite: BenchmarkTestSuite = BenchmarkTestSuite.app,
 ) -> tuple[BenchmarkResult, BenchmarkResult]:
     async def _run(add_async_safe: bool) -> BenchmarkResult:
-        return await benchmark_app(get_app(add_async_safe=add_async_safe), runs=runs, concurrency=concurrency)
+        factory = _SUITE_TO_APP[suite]
+
+        return await benchmark_app(
+            factory(add_async_safe=add_async_safe),
+            runs=runs,
+            concurrency=concurrency,
+        )
 
     default_run = await _run(False)
     async_safe_run = await _run(True)
@@ -83,6 +106,7 @@ async def benchmark(
 
 
 __all__ = [
+    "BenchmarkTestSuite",
     "BenchmarkResult",
     "benchmark",
 ]

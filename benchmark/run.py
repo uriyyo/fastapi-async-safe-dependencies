@@ -4,7 +4,7 @@ from typing import Any, Iterator, Literal
 
 import click
 
-from benchmark.runner import BenchmarkResult, benchmark
+from benchmark.runner import BenchmarkResult, BenchmarkTestSuite, benchmark
 from benchmark.utils import run
 
 
@@ -83,16 +83,26 @@ def _md_output(rows: list[ResultRow]) -> None:
 
 @click.command()
 @click.option(
+    "-r",
     "--runs",
     default=1_000,
     help="Number of runs to perform",
 )
 @click.option(
+    "-c",
     "--concurrency",
     default=10,
     help="Number of concurrent requests",
 )
 @click.option(
+    "-s",
+    "--suite",
+    default=BenchmarkTestSuite.app,
+    type=click.Choice([v.value for v in BenchmarkTestSuite]),
+    help="Which test suite to run",
+)
+@click.option(
+    "-o",
     "--output",
     default="json",
     type=click.Choice(["json", "md"]),
@@ -101,9 +111,17 @@ def _md_output(rows: list[ResultRow]) -> None:
 def main(
     runs: int,
     concurrency: int,
+    suite: BenchmarkTestSuite,
     output: Literal["json", "md"],
 ) -> None:
-    default_run, async_safe_run = run(benchmark(runs=runs, concurrency=concurrency))
+    suite = BenchmarkTestSuite(suite)
+    default_run, async_safe_run = run(
+        benchmark(
+            runs=runs,
+            concurrency=concurrency,
+            suite=suite,
+        )
+    )
 
     rows: list[ResultRow] = []
     for field in fields(BenchmarkResult):
