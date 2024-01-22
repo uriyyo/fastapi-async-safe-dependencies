@@ -43,6 +43,8 @@ jobs:
           poetry run bash benchmark/run.sh > benchmark/README.md
 
       - name: Commit result
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           export DATE=$(date +'%Y-%m-%d')
           export BRANCH_NAME="benchmark-$DATE"
