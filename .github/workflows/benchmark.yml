@@ -40,7 +40,7 @@ jobs:
 
       - name: Run benchmark
         run: |
-          poetry run bash benchmark/run.sh > benchmark/result.md
+          poetry run bash benchmark/run.sh > benchmark/README.md
 
       - name: Commit result
         run: |

@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Any, AsyncIterator, Optional
 
 from fastapi import Depends, FastAPI, Query
-from typing_extensions import dataclass_transform
 
 from fastapi_async_safe import async_safe
 
@@ -19,13 +18,9 @@ async def get_db() -> AsyncIterator[DB]:
 
 
 @async_safe
-@dataclass_transform()
 class Dependency:
-    def __init_subclass__(cls, *, no_transform: bool = False, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
-
-        if not no_transform:
-            dataclass(cls)
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        dataclass(cls)
 
 
 class UserRepository(Dependency):
