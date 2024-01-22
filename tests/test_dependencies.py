@@ -19,6 +19,9 @@ async def test_dependency_wrapped():
     def sync_func():
         calls.add(f"{threading.get_ident()}-sync_func")
 
+    async def async_func():
+        calls.add(f"{threading.get_ident()}-async_func")
+
     @async_safe
     class ClassDep:
         def __init__(self):
@@ -28,6 +31,7 @@ async def test_dependency_wrapped():
     async def route(
         a: Any = Depends(sync_func),
         b: Any = Depends(ClassDep),
+        c: Any = Depends(async_func),
     ):
         calls.add(f"{threading.get_ident()}-route")
         return {}
@@ -40,6 +44,7 @@ async def test_dependency_wrapped():
 
     assert calls == {
         f"{indent}-sync_func",
+        f"{indent}-async_func",
         f"{indent}-ClassDep",
         f"{indent}-route",
     }
@@ -47,11 +52,15 @@ async def test_dependency_wrapped():
 
 async def test_dependency_not_wrapped():
     app = FastAPI()
+    init_app(app)
 
     indent = threading.get_ident()
 
     def sync_func():
         assert threading.get_ident() != indent
+
+    async def async_func():
+        assert threading.get_ident() == indent
 
     class ClassDep:
         def __init__(self):
@@ -61,6 +70,7 @@ async def test_dependency_not_wrapped():
     async def route(
         a: Any = Depends(sync_func),
         b: Any = Depends(ClassDep),
+        c: Any = Depends(async_func),
     ):
         return {}
 

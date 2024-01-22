@@ -83,10 +83,10 @@ def _md_output(rows: list[ResultRow]) -> None:
 
 @click.command()
 @click.option(
-    "-r",
-    "--runs",
-    default=1_000,
-    help="Number of runs to perform",
+    "-n",
+    "--requests",
+    default=10_000,
+    help="Number of requests to perform",
 )
 @click.option(
     "-c",
@@ -109,7 +109,7 @@ def _md_output(rows: list[ResultRow]) -> None:
     help="Output format (json or markdown)",
 )
 def main(
-    runs: int,
+    requests: int,
     concurrency: int,
     suite: BenchmarkTestSuite,
     output: Literal["json", "md"],
@@ -117,7 +117,7 @@ def main(
     suite = BenchmarkTestSuite(suite)
     default_run, async_safe_run = run(
         benchmark(
-            runs=runs,
+            requests=requests,
             concurrency=concurrency,
             suite=suite,
         )

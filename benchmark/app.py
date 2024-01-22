@@ -1,3 +1,4 @@
+from asyncio import sleep
 from dataclasses import dataclass
 from typing import Any, AsyncIterator, Optional
 
@@ -10,6 +11,7 @@ router = APIRouter()
 
 class DB:
     async def get(self) -> Any:
+        await sleep(0)  # simulate db call, just will switch to another task
         return {"hello": "world"}
 
 

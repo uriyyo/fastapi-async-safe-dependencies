@@ -17,6 +17,10 @@ def is_async_safe(dep: T) -> bool:
     return getattr(dep, "__is_async_safe__", False)
 
 
+def is_marked_with_async_safe(dep: T) -> bool:
+    return hasattr(dep, "__is_async_safe__")
+
+
 # TODO: Not sure if need this, we can only use `async_safe` decorator
 @async_safe
 class AsyncSafeMixin:

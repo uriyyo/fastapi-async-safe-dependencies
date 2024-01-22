@@ -1,5 +1,5 @@
 import time
-from asyncio import gather
+from asyncio import Semaphore, as_completed
 from dataclasses import dataclass
 from enum import Enum
 
@@ -66,10 +66,12 @@ class BenchmarkResult:
 async def benchmark_app(
     app: ASGIApp,
     *,
-    runs: int,
+    requests: int,
     concurrency: int,
 ) -> BenchmarkResult:
     app = XProcesTime(app)
+
+    semaphore = Semaphore(concurrency)
 
     async with (
         LifespanManager(app),
@@ -77,16 +79,22 @@ async def benchmark_app(
     ):
         times: list[float] = []
 
-        for _ in range(runs):
-            responses = await gather(*[client.get("/") for _ in range(concurrency)])
-            times.extend(float(response.headers["x-process-time"]) for response in responses)
+        async def _run() -> float:
+            async with semaphore:
+                response = await client.get("/")
+                response.raise_for_status()
+
+            return float(response.headers["x-process-time"])
+
+        for f in as_completed([_run() for _ in range(requests)]):
+            times.append(await f)
 
     return BenchmarkResult.from_times(times)
 
 
 async def benchmark(
     *,
-    runs: int,
+    requests: int,
     concurrency: int,
     suite: BenchmarkTestSuite = BenchmarkTestSuite.app,
 ) -> tuple[BenchmarkResult, BenchmarkResult]:
@@ -95,7 +103,7 @@ async def benchmark(
 
         return await benchmark_app(
             factory(add_async_safe=add_async_safe),
-            runs=runs,
+            requests=requests,
             concurrency=concurrency,
         )
 

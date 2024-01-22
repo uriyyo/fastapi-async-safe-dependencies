@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from functools import partial
 from typing import Any, AsyncIterator, Iterator, TypeVar
@@ -20,12 +21,19 @@ def _all_dependencies(dependant: Dependant) -> Iterator[Dependant]:
 def wrap_dependant(dependant: Dependant) -> bool:
     call = dependant.call
 
+    # no dependant call, there is nothing we can do
     if call is None:  # pragma: no cover
         return False
 
+    # call is already wrapped with `safe_async_wrapper`, no need to wrap it again
     if is_async_safe_wrapper(call):
         return False
 
+    # call is coroutine function, no need to wrap it
+    if asyncio.iscoroutinefunction(call):
+        return False
+
+    # call is not async safe, it not safe to wrap it with `safe_async_wrapper`
     if not is_async_safe(call):
         return False
 
