@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 function run_benchmark() {
-    python -m benchmark.run --runs 1000 --concurrency $1 --output md
+    python -m benchmark.run --runs 250 --concurrency "$1" --output md
 }
 
 echo "
@@ -11,7 +11,7 @@ $(cat benchmark/app.py)
 \`\`\`
 "
 
-for conn in 1 10 20 40 50 75 100;
+for conn in 1 10 25 50 100;
   do
     echo "
 ## Concurrency $conn
