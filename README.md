@@ -207,6 +207,18 @@ app = FastAPI()
 init_app(app)  # don't forget to initialize application !!!
 ```
 
+If you want to wrap all your class-based dependencies with `@async_safe` decorator you can pass `all_classes_safe=True`
+argument to `init_app` function. It will wrap all your class-based dependencies expect those that are decorated with
+`@async_unsafe` decorator.
+
+```python
+from fastapi import FastAPI
+from fastapi_async_safe import init_app
+
+app = FastAPI()
+init_app(app, all_classes_safe=True)
+```
+
 # Benchmarks
 
 Please take a look at the [benchmark](https://github.com/uriyyo/fastapi-async-safe-dependencies/tree/main/benchmark) directory for more details.

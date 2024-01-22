@@ -1,7 +1,8 @@
 import asyncio
+import inspect
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import Any, AsyncIterator, Iterator, TypeVar
+from typing import Any, AsyncIterator, Callable, Iterator, Optional, TypeVar
 
 from fastapi import FastAPI
 from fastapi.dependencies.models import Dependant
@@ -18,12 +19,11 @@ def _all_dependencies(dependant: Dependant) -> Iterator[Dependant]:
         yield from _all_dependencies(dep)
 
 
-def wrap_dependant(dependant: Dependant) -> bool:
-    call = dependant.call
-
-    # no dependant call, there is nothing we can do
-    if call is None:  # pragma: no cover
-        return False
+def _should_wrap_dependant_call(
+    call: Callable[..., Any],
+    all_classes_safe: Optional[bool] = None,
+) -> bool:
+    all_classes_safe = all_classes_safe or False
 
     # call is already wrapped with `safe_async_wrapper`, no need to wrap it again
     if is_async_safe_wrapper(call):
@@ -33,8 +33,29 @@ def wrap_dependant(dependant: Dependant) -> bool:
     if asyncio.iscoroutinefunction(call):
         return False
 
+    # we treat all classes as async safe, this call is class, and it is not marked with `async_safe`/`async_unsafe`
+    # so we can safely wrap it with `safe_async_wrapper`
+    if all_classes_safe and inspect.isclass(call) and is_async_safe(call) is None:
+        return True
+
     # call is not async safe, it not safe to wrap it with `safe_async_wrapper`
     if not is_async_safe(call):
+        return False
+
+    return True
+
+
+def wrap_dependant(
+    dependant: Dependant,
+    all_classes_safe: Optional[bool] = None,
+) -> bool:
+    call = dependant.call
+
+    # not sure if it's possible, but it marked as optional, so let have a check
+    if call is None:  # pragma: no cover
+        return False
+
+    if not _should_wrap_dependant_call(call, all_classes_safe):
         return False
 
     wrapped = safe_async_wrapper(dependant.call)  # type: ignore[arg-type]
@@ -55,7 +76,10 @@ def _get_router(root: THasRoutes) -> APIRouter:
     return root
 
 
-def wrap_dependencies(holder: THasRoutes) -> None:
+def wrap_dependencies(
+    holder: THasRoutes,
+    all_classes_safe: Optional[bool] = None,
+) -> None:
     router = _get_router(holder)
 
     for route in router.routes:
@@ -63,21 +87,35 @@ def wrap_dependencies(holder: THasRoutes) -> None:
             continue
 
         for dependant in _all_dependencies(route.dependant):
-            wrap_dependant(dependant)
+            wrap_dependant(dependant, all_classes_safe)
 
 
 @asynccontextmanager
-async def _lifespan_wrapper(base_lifespan: Any, app: THasRoutes) -> AsyncIterator[Any]:
+async def _lifespan_wrapper(
+    app: THasRoutes,
+    *,
+    base_lifespan: Any,
+    all_classes_safe: Optional[bool] = None,
+) -> AsyncIterator[Any]:
     router = _get_router(app)
-    wrap_dependencies(router)
+    wrap_dependencies(router, all_classes_safe)
 
     async with base_lifespan(app) as state:
         yield state
 
 
-def init_app(root: THasRoutes) -> THasRoutes:
+def init_app(
+    root: THasRoutes,
+    *,
+    all_classes_safe: Optional[bool] = None,
+) -> THasRoutes:
     router = _get_router(root)
-    router.lifespan_context = partial(_lifespan_wrapper, router.lifespan_context)
+
+    router.lifespan_context = partial(
+        _lifespan_wrapper,
+        base_lifespan=router.lifespan_context,
+        all_classes_safe=all_classes_safe,
+    )
 
     return root
 

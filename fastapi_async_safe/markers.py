@@ -1,27 +1,25 @@
-from typing import TypeVar
+from typing import Optional, TypeVar
 
 T = TypeVar("T")
 
+_MARKER_ATTR = "__is_async_safe__"
+
 
 def async_safe(dep: T) -> T:
-    dep.__is_async_safe__ = True  # type: ignore[attr-defined]
+    setattr(dep, _MARKER_ATTR, True)
     return dep
 
 
 def async_unsafe(dep: T) -> T:
-    dep.__is_async_safe__ = False  # type: ignore[attr-defined]
+    setattr(dep, _MARKER_ATTR, False)
     return dep
 
 
-def is_async_safe(dep: T) -> bool:
-    return getattr(dep, "__is_async_safe__", False)
+def is_async_safe(dep: T) -> Optional[bool]:
+    return getattr(dep, _MARKER_ATTR, None)
 
 
-def is_marked_with_async_safe(dep: T) -> bool:
-    return hasattr(dep, "__is_async_safe__")
-
-
-# TODO: Not sure if need this, we can only use `async_safe` decorator
+# TODO: Not sure if need this, maybe just remove it and force users to use `async_safe` decorator?
 @async_safe
 class AsyncSafeMixin:
     pass
