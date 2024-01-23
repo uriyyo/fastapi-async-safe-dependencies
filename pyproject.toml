@@ -5,6 +5,9 @@ description = "FastAPI async safe dependencies"
 authors = [
     "Yurii Karabas <1998uriyyo@gmail.com>",
 ]
+packages = [
+    {include = "fastapi_async_safe"},
+]
 
 license = "MIT"
 readme = "README.md"
