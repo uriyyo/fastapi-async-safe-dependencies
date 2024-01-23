@@ -61,12 +61,12 @@ def _md_output(rows: list[ResultRow]) -> None:
         return f"{_format_float(f)}ms"
 
     def _format_diff(diff: float) -> str:
-        if diff > 0:
-            return f"x{_format_float(diff)} faster"
-        if diff < 0:
-            return f"x{_format_float(diff)} slower"
+        if diff > 1:
+            return f"x{_format_float(diff)} (faster)"
+        if diff < 1:
+            return f"x{_format_float(diff)} (slower)"
 
-        return "0 same"
+        return "x1 (same)"
 
     formatted_rows = [
         (

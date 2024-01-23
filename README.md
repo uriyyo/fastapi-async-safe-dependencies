@@ -15,21 +15,26 @@ But FastAPI comes with one little problem that will make your application slower
 Let's take a look at the following example from FastAPI documentation:
 
 ```python
-from typing import Union
-
 from fastapi import Depends, FastAPI
 
 app = FastAPI()
 
-fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
-
+fake_items_db = [
+    {"item_name": "Foo"},
+    {"item_name": "Bar"},
+    {"item_name": "Baz"},
+]
 
 class CommonQueryParams:
-    def __init__(self, q: Union[str, None] = None, skip: int = 0, limit: int = 100) -> None:
+    def __init__(
+        self,
+        q: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> None:
         self.q = q
         self.skip = skip
         self.limit = limit
-
 
 @app.get("/items/")
 async def read_items(commons: CommonQueryParams = Depends(CommonQueryParams)):
@@ -70,11 +75,20 @@ from fastapi_async_safe import async_safe, init_app
 app = FastAPI()
 init_app(app)   # don't forget to initialize application
 
-fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+fake_items_db = [
+    {"item_name": "Foo"},
+    {"item_name": "Bar"},
+    {"item_name": "Baz"},
+]
 
 @async_safe  # you just need to add this decorator to your dependency
 class CommonQueryParams:
-    def __init__(self, q: Union[str, None] = None, skip: int = 0, limit: int = 100) -> None:
+    def __init__(
+        self,
+        q: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> None:
         self.q = q
         self.skip = skip
         self.limit = limit
@@ -95,27 +109,33 @@ That's it, now your dependency will be called as simple coroutine, and it will n
 Code above is equivalent to the following code:
 
 ```python
-from typing import Union
-
 from fastapi import Depends, FastAPI
 
-from fastapi_async_safe import async_safe, init_app
-
 app = FastAPI()
-init_app(app)
 
-fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+fake_items_db = [
+    {"item_name": "Foo"},
+    {"item_name": "Bar"},
+    {"item_name": "Baz"},
+]
 
-
-@async_safe
 class CommonQueryParams:
-    def __init__(self, q: Union[str, None] = None, skip: int = 0, limit: int = 100) -> None:
+    def __init__(
+        self,
+        q: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> None:
         self.q = q
         self.skip = skip
         self.limit = limit
 
 
-async def _common_query_params(q: Union[str, None] = None, skip: int = 0, limit: int = 100) -> CommonQueryParams:
+async def _common_query_params(
+    q: str | None = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> CommonQueryParams:
     return CommonQueryParams(q=q, skip=skip, limit=limit)
 
 
@@ -135,21 +155,25 @@ All you need to do is to add `@async_safe` decorator to your dependency class or
 should not be delegated to the thread-pool executor.
 
 ```python
-from typing import Union, Any
+from typing import Any
 from dataclasses import dataclass
 
 from fastapi_async_safe import async_safe
 
-@async_safe
 @dataclass
+@async_safe
 class CommonQueryParams:
-    q: Union[str, None] = None
+    q: str | None = None
     skip: int = 0
     limit: int = 100
 
 
 @async_safe
-def common_query_params(q: Union[str, None] = None, skip: int = 0, limit: int = 100) -> dict[str, Any]:
+def common_query_params(
+    q: str | None = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> dict[str, Any]:
     return {"q": q, "skip": skip, "limit": limit}
 ```
 
@@ -158,19 +182,18 @@ Both `CommonQueryParams` class and `common_query_params` function will not be de
 If your class inherits from a class that is decorated with `@async_safe` decorator then this class will be `async-safe` too.
 
 ```python
-from typing import Union
 from dataclasses import dataclass
 
 from fastapi_async_safe import async_safe
 
+@dataclass
 @async_safe
-@dataclass
 class BaseQueryParams:
-    q: Union[str, None] = None
+    q: str | None = None
 
 
-@dataclass
-class CommonQueryParams(BaseQueryParams):  # this class will be async-safe too
+@dataclass  # this class will be async-safe too
+class CommonQueryParams(BaseQueryParams):
     skip: int = 0
     limit: int = 100
 ```
@@ -178,20 +201,19 @@ class CommonQueryParams(BaseQueryParams):  # this class will be async-safe too
 If you don't want your inherited class to be `async-safe` you can use `@async_unsafe` decorator.
 
 ```python
-from typing import Union
 from dataclasses import dataclass
 
 from fastapi_async_safe import async_safe, async_unsafe
 
+@dataclass
 @async_safe
-@dataclass
 class BaseQueryParams:
-    q: Union[str, None] = None
+    q: str | None = None
 
 
-@async_unsafe
 @dataclass
-class CommonQueryParams(BaseQueryParams):  # this class will be async-safe too
+@async_unsafe  # this class no longer will be async-safe
+class CommonQueryParams(BaseQueryParams):
     skip: int = 0
     limit: int = 100
 ```
