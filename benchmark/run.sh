@@ -7,7 +7,7 @@ function run_benchmark() {
 echo "
 Benchmark for simple application:
 \`\`\`py
-$(cat benchmark/app.py)
+$(cat benchmark/apps/app.py)
 \`\`\`
 "
 
