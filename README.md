@@ -37,7 +37,7 @@ class CommonQueryParams:
         self.limit = limit
 
 @app.get("/items/")
-async def read_items(commons: CommonQueryParams = Depends(CommonQueryParams)):
+async def read_items(commons: CommonQueryParams = Depends()):
     response = {}
     if commons.q:
         response.update({"q": commons.q})
@@ -67,8 +67,6 @@ for class-based dependencies and it should improve your application performance.
 Let's take a look at the same example, but with `fastapi-async-safe-dependencies` library:
 
 ```python
-from typing import Union
-
 from fastapi import Depends, FastAPI
 from fastapi_async_safe import async_safe, init_app
 
@@ -95,7 +93,7 @@ class CommonQueryParams:
 
 
 @app.get("/items/")
-async def read_items(commons: CommonQueryParams = Depends(CommonQueryParams)):
+async def read_items(commons: CommonQueryParams = Depends()):
     response = {}
     if commons.q:
         response.update({"q": commons.q})
