@@ -20,11 +20,11 @@ class XProcesTime:
     app: ASGIApp
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        start = time.monotonic()
+        start = time.perf_counter()
 
         async def send_wrapper(message: Message) -> None:
             if message["type"] == "http.response.start":
-                MutableHeaders(scope=message)["x-process-time"] = str(time.monotonic() - start)
+                MutableHeaders(scope=message)["x-process-time"] = str(time.perf_counter() - start)
 
             return await send(message)
 
