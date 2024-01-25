@@ -12,6 +12,7 @@ from typing_extensions import Self
 from benchmark.apps.app import get_app as default_get_app
 from benchmark.apps.db_app import get_app as db_get_app
 from benchmark.apps.fastapi_example_app import get_app as fastapi_example_get_app
+from benchmark.apps.injector import get_app as injector_get_app
 
 
 @dataclass
@@ -33,6 +34,7 @@ class XProcesTime:
 class BenchmarkTestSuite(str, Enum):
     app = "app"
     db = "db"
+    injector = "injector"
     fastapi_example = "fastapi_example"
 
     def __str__(self) -> str:
@@ -42,6 +44,7 @@ class BenchmarkTestSuite(str, Enum):
 _SUITE_TO_APP = {
     BenchmarkTestSuite.app: default_get_app,
     BenchmarkTestSuite.db: db_get_app,
+    BenchmarkTestSuite.injector: injector_get_app,
     BenchmarkTestSuite.fastapi_example: fastapi_example_get_app,
 }
 
