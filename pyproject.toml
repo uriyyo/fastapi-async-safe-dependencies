@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastapi-async-safe-dependencies"
-version = "0.1.1"
+version = "0.1.2"
 description = "FastAPI async safe dependencies"
 authors = [
     "Yurii Karabas <1998uriyyo@gmail.com>",
