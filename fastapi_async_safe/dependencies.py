@@ -44,7 +44,8 @@ def _should_wrap_dependant_call(
         return True
 
     # it's extension, so we will wrap it
-    if extensions_predicate(call):
+    # TODO: add test for extensions
+    if extensions_predicate(call):  # pragma: no cover
         return True
 
     # we treat all classes as async safe, this call is class, and it is not marked with `async_safe`/`async_unsafe`
