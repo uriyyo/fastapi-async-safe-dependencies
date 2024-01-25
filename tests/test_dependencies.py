@@ -79,6 +79,30 @@ async def test_dependency_not_wrapped():
         response.raise_for_status()
 
 
+async def test_predicates():
+    app = FastAPI()
+    init_app(app, predicates=[lambda f: f is sync_func])
+
+    indent = threading.get_ident()
+
+    def sync_func():
+        assert threading.get_ident() == indent
+
+    async def async_func():
+        assert threading.get_ident() == indent
+
+    @app.get("/")
+    async def route(
+        a: Any = Depends(sync_func),
+        c: Any = Depends(async_func),
+    ):
+        return {}
+
+    async with app_ctx(app) as client:
+        response = await client.get("/")
+        response.raise_for_status()
+
+
 async def test_all_classes_safe():
     app = FastAPI()
     init_app(app, all_classes_safe=True)

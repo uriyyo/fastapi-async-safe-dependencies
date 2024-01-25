@@ -2,14 +2,19 @@ import asyncio
 import inspect
 from contextlib import asynccontextmanager
 from functools import partial
-from typing import Any, AsyncIterator, Callable, Iterator, Optional, TypeVar
+from typing import Any, AsyncIterator, Iterator, Optional, Sequence, TypeVar
 
 from fastapi import FastAPI
 from fastapi.dependencies.models import Dependant
 from fastapi.routing import APIRoute, APIRouter
+from typing_extensions import TypeAlias
 
 from .decorators import is_async_safe_wrapper, safe_async_wrapper
+from .ext import extensions_predicate
 from .markers import is_async_safe
+from .types import DependantCall, DependantCallPredicate
+
+_Predicates: TypeAlias = Optional[Sequence[DependantCallPredicate]]
 
 
 def _all_dependencies(dependant: Dependant) -> Iterator[Dependant]:
@@ -20,8 +25,9 @@ def _all_dependencies(dependant: Dependant) -> Iterator[Dependant]:
 
 
 def _should_wrap_dependant_call(
-    call: Callable[..., Any],
+    call: DependantCall,
     all_classes_safe: Optional[bool] = None,
+    predicates: _Predicates = None,
 ) -> bool:
     all_classes_safe = all_classes_safe or False
 
@@ -32,6 +38,15 @@ def _should_wrap_dependant_call(
     # call is coroutine function, no need to wrap it
     if asyncio.iscoroutinefunction(call):
         return False
+
+    # one of the predicates matched, so we will wrap it
+    if any(predicate(call) for predicate in predicates or ()):
+        return True
+
+    # it's extension, so we will wrap it
+    # TODO: add test for extensions
+    if extensions_predicate(call):  # pragma: no cover
+        return True
 
     # we treat all classes as async safe, this call is class, and it is not marked with `async_safe`/`async_unsafe`
     # so we can safely wrap it with `safe_async_wrapper`
@@ -48,6 +63,7 @@ def _should_wrap_dependant_call(
 def wrap_dependant(
     dependant: Dependant,
     all_classes_safe: Optional[bool] = None,
+    predicates: _Predicates = None,
 ) -> bool:
     call = dependant.call
 
@@ -55,7 +71,7 @@ def wrap_dependant(
     if call is None:  # pragma: no cover
         return False
 
-    if not _should_wrap_dependant_call(call, all_classes_safe):
+    if not _should_wrap_dependant_call(call, all_classes_safe, predicates):
         return False
 
     wrapped = safe_async_wrapper(dependant.call)  # type: ignore[arg-type]
@@ -79,6 +95,7 @@ def _get_router(root: THasRoutes) -> APIRouter:
 def wrap_dependencies(
     holder: THasRoutes,
     all_classes_safe: Optional[bool] = None,
+    predicates: _Predicates = None,
 ) -> None:
     router = _get_router(holder)
 
@@ -87,7 +104,7 @@ def wrap_dependencies(
             continue
 
         for dependant in _all_dependencies(route.dependant):
-            wrap_dependant(dependant, all_classes_safe)
+            wrap_dependant(dependant, all_classes_safe, predicates)
 
 
 @asynccontextmanager
@@ -96,9 +113,10 @@ async def _lifespan_wrapper(
     *,
     base_lifespan: Any,
     all_classes_safe: Optional[bool] = None,
+    predicates: _Predicates = None,
 ) -> AsyncIterator[Any]:
     router = _get_router(app)
-    wrap_dependencies(router, all_classes_safe)
+    wrap_dependencies(router, all_classes_safe, predicates)
 
     async with base_lifespan(app) as state:
         yield state
@@ -108,6 +126,7 @@ def init_app(
     root: THasRoutes,
     *,
     all_classes_safe: Optional[bool] = None,
+    predicates: _Predicates = None,
 ) -> THasRoutes:
     router = _get_router(root)
 
@@ -115,6 +134,7 @@ def init_app(
         _lifespan_wrapper,
         base_lifespan=router.lifespan_context,
         all_classes_safe=all_classes_safe,
+        predicates=predicates,
     )
 
     return root
