@@ -441,13 +441,13 @@ all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)"
 
 [[package]]
 name = "fastapi-lifespan-manager"
-version = "0.1.3"
+version = "0.1.4"
 description = "FastAPI Lifespan Manager"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fastapi_lifespan_manager-0.1.3-py3-none-any.whl", hash = "sha256:285a6da8bd9d2f7c3f5192259ad07dc0426b6b1863b23a1e1d3a3f1c51ac2f9f"},
-    {file = "fastapi_lifespan_manager-0.1.3.tar.gz", hash = "sha256:a8be3c95a3c38db4f90d185eb0bd07c2db176766311f3633c43a7787d9528172"},
+    {file = "fastapi_lifespan_manager-0.1.4-py3-none-any.whl", hash = "sha256:9d18e2c01cd91432ed05c7f94a02bb43e9ad68a5a55ccc813005f0b5f79e8bd9"},
+    {file = "fastapi_lifespan_manager-0.1.4.tar.gz", hash = "sha256:1dc4a776cd4305bf7baf4791f148216c21ab966916216d72b5dc2a27a21d8d02"},
 ]
 
 [package.dependencies]
