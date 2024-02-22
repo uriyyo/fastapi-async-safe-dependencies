@@ -36,7 +36,7 @@ pytest-cov = "^4.1.0"
 ruff = ">=0.1.14,<0.3.0"
 mypy = "^1.8.0"
 pre-commit = "^3.6.0"
-httpx = "^0.26.0"
+httpx = ">=0.26,<0.28"
 asgi-lifespan = "^2.1.0"
 click = "^8.1.7"
 uvicorn = {version = "^0.27.0", extras = ["standard"]}
