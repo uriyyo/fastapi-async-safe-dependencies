@@ -26,7 +26,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-fastapi = ">=0.109,<0.125"
+fastapi = ">=0.109,<0.126"
 typing-extensions = "^4.9.0"
 
 [tool.poetry.group.dev.dependencies]
